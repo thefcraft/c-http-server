@@ -5,6 +5,20 @@
 
 // gcc -c server.c -o server.o -lws2_32 && gcc -shared -o server.dll server.o -lws2_32
 
+// in linux gcc -c server.c && ar rcs libserver.a server.o
+
+#ifdef _WIN32
+    #pragma comment(lib, "ws2_32.lib") // Link with ws2_32.lib
+    #define InitializeWinsock WSADATA wsa; if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0) { printf("WSAStartup failed\n"); return 1; }
+    #define ClearWinsock WSACleanup()
+#else
+    #define closesocket close
+    #define InitializeWinsock
+    #define SOCKET int
+    #define ClearWinsock
+    #define min(a, b) (a>b)?b:a
+#endif
+
 #define BUFFER_SIZE 4096
 
 typedef struct _server server;

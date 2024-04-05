@@ -9,9 +9,9 @@
 #else
     #include <sys/socket.h>
     #include <netinet/in.h>
+    #include <unistd.h> // For close()
+    #include <arpa/inet.h> // For inet_ntop()
 #endif
-
-#pragma comment(lib, "ws2_32.lib") // Link with ws2_32.lib
 
 int find(char *s, char *value) {
     int i = 0;
@@ -89,22 +89,18 @@ void _server_route(struct _server *self, char *method, char *path, Callback call
     self->length++;
 }
 int _server_run(struct _server *self, char *host, int port, int debug){
-    WSADATA wsa;
+    // Initialize Winsock
+    InitializeWinsock;
+    
     SOCKET server_sock, client_sock;
     struct sockaddr_in server, client;
-    int client_len;
+    socklen_t client_len;
     char client_ip[INET_ADDRSTRLEN]; // Buffer to store client IP address
     char buffer[BUFFER_SIZE+1]; // Buffer to store received data
-    
-    // Initialize Winsock
-    if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0) {
-        printf("WSAStartup failed\n");
-        return 1;
-    }
 
     // Create socket
-    if ((server_sock = socket(AF_INET, SOCK_STREAM, 0)) == INVALID_SOCKET) {
-        printf("Socket creation failed\n");
+    if ((server_sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) { // INVALID_SOCKET == ~0
+        perror("Socket creation failed");
         return 1;
     }
     
@@ -114,20 +110,20 @@ int _server_run(struct _server *self, char *host, int port, int debug){
     server.sin_port = htons(port);
     
     // Bind
-    if (bind(server_sock, (struct sockaddr *)&server, sizeof(server)) == SOCKET_ERROR) {
-        printf("Bind failed\n");
+    if (bind(server_sock, (struct sockaddr *)&server, sizeof(server)) < 0) { // SOCKET_ERROR == -1
+        perror("Bind failed");
         return 1;
     }
     printf("Server listening on port %d...\n", port);
 
     // Listen
-    listen(server_sock, 3);
+    listen(server_sock, 5);
 
     // Accept and handle connections
     while (1) {
         client_len = sizeof(client);
         client_sock = accept(server_sock, (struct sockaddr *)&client, &client_len);
-        if (client_sock == INVALID_SOCKET) {
+        if (client_sock < 0) { // INVALID_SOCKET == ~0
             printf("Accept failed\n");
             return 1;
         }
@@ -281,7 +277,7 @@ int _server_run(struct _server *self, char *host, int port, int debug){
     
     // Close server socket
     closesocket(server_sock);
-    WSACleanup();
+    ClearWinsock;
     return 0;
 
 }
