@@ -1,0 +1,313 @@
+<html>
+<head>
+	<title>Modern Webpage</title>
+	<style>
+        /*
+#3A80E2
+#418CFC
+*/
+
+body{
+	font-family: 'Montserrat', sans-serif;
+	padding: 0;
+	margin: 0;
+	overflow-x: hidden;
+}
+
+.principal{
+	display: flex;
+	flex-direction: column;
+}
+
+.logo{
+	
+	display: flex;
+	width: 50%;
+	justify-content: flex-start;
+	align-items: center;
+	font-size: 1.3em;
+	color: #434343;
+}
+
+.logo > strong{
+	padding-top: 5px;
+	padding-bottom: 5px;
+	border-top: solid 2px;
+	border-bottom: solid 2px;
+} 
+
+.icon{
+	width: 50px;
+}
+
+.menu{
+	width: 50%;
+}
+
+.menu > ul{
+	list-style-type: none;
+	display: flex;
+	flex-direction: row;
+	justify-content: space-around;
+	align-items: center;
+	width: 100%;
+}
+
+li{
+	cursor: pointer;
+	color: #434343;
+	transition: all 0.3s;
+	border:solid 1px white;
+	padding: 5px;
+	border-radius: 5px;
+}
+
+li:hover{
+	color: #418CFC;
+	border-color: #418CFC;
+}
+
+.navbar{
+	padding-top: 10px;
+	padding-bottom: 15px;
+	padding-left: 20px;
+	padding-right: 20px;
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+}
+
+.introduce{
+	background-color: #f3f3f3;
+	padding-top: 90px;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	padding-bottom: 90px;
+	background: url('https://res.cloudinary.com/codier/image/upload/v1559615517/p9apta9l8cedcmbfyqcc.png');
+	background-repeat: no-repeat;
+	background-size: cover;
+}
+
+.big-lemma{
+	font-size: 3em;
+	font-weight: bold;
+	margin-bottom: 15px;
+}
+
+.sub-lemma{
+	font-size: 0.8em;
+	color: #434343;
+}
+
+.trial{
+	font-family: 'Montserrat', sans-serif;
+	margin-top: 20px;
+	padding: 15px;
+	background-color: #3A80E2;
+	color: white;
+	border: 0;
+	border-radius: 5px;
+	font-weight: bold;
+	cursor: pointer;
+	transition: all 0.3s;
+}
+
+.trial:hover{
+	background-color: #418CFC;
+}
+
+small{
+	font-size: 0.7em;
+	color: #434343;
+}
+
+
+
+.description{
+	padding-left: 50px;
+	padding-right: 50px;
+	padding-top: 70px;
+	padding-bottom: 70px;
+	background-color: #3A80E2;
+	color: white;
+	display: grid;
+	grid-template-columns: 1fr 1fr 1fr;
+	grid-column-gap: 50px;
+}
+
+.description > div{
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+}
+
+.logoD{
+	font-size: 1.6em;
+	font-weight: bold;
+	margin-bottom: 15px;
+}
+
+.textD{
+	font-size: 0.9em;
+	color: #f3f3f3;
+	text-align: justify;
+}
+
+.opinion{
+	padding-top: 130px;
+	padding-bottom: 130px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	background: url('https://res.cloudinary.com/codier/image/upload/v1559615517/p9apta9l8cedcmbfyqcc.png');
+	background-position: center;
+	background-origin: initial;
+	background-repeat: no-repeat;
+	background-size: cover;
+	transform:scaleX(-1) scaleY(-1);
+}
+
+.opinion > .inside{
+	transform:scaleX(-1) scaleY(-1);
+	display: flex;
+	flex-direction: row;
+	width: 50%
+}
+
+.imageO{
+	margin-right: 30px;
+}
+
+img{
+	width: 100px;
+	border-radius: 50%;
+}
+
+footer{
+	padding-left: 30px;
+	background-color: #626262;
+	height: 200px;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	color: white;
+}
+
+a{
+	color: #f3f3f3;
+	text-decoration: none;
+	border:solid 1px #626262;
+	padding: 3px;
+	transition: all 0.3s;
+	border-radius: 5px;
+}
+
+a:hover{
+	border-color: white;
+}
+
+
+footer > div{
+	width: 30%
+}
+
+
+    </style>
+</head>
+<body>
+	<style>
+		@import url('https://fonts.googleapis.com/css?family=Montserrat&display=swap');
+	</style>
+	<style>
+		@import url('https://fonts.googleapis.com/icon?family=Material+Icons');
+	</style>
+	<section class="principal">
+		<div class="navbar">
+			<div class="logo">
+				<strong>Modern</strong> 
+				<div class="icon">
+					<svg id="Capa_1" x="0px" y="0px"
+					viewBox="0 0 58 58" style="enable-background:new 0 0 58 58;" xml:space="preserve">
+						<g>
+							<polygon style="fill:#418CFC;" points="29,58 3,45 3,13 29,26 	"/>
+							<polygon style="fill:#3A80E2;" points="29,58 55,45 55,13 29,26 	"/>
+							<polygon style="fill:#418CFC;" points="3,13 28,0 55,13 29,26 	"/>
+						</g>
+					</svg>
+				</div> 
+				<strong>Webpage</strong>
+			</div>
+			<div class="menu">
+				<ul>
+					<li>Products</li>
+					<li>Blog</li>
+					<li>About</li>
+					<li>Contact</li>
+				</ul>
+			</div>
+		</div>
+		<div class="introduce">
+			<div class="big-lemma"> You can create</div>
+			<div class="big-lemma">  the web of your dreams</div>
+			<div class="sub-lemma"> with the totally new html5 and css3 technologies, give them a try ;)</div>
+			<button class="trial"> Start your free trial</button>
+			<small> no money required.</small>
+		</div>
+		<div class="description">
+			<div>
+				<div class="logoD">
+					<i class="material-icons">web</i>
+					HTML5
+				</div>
+				<div class="textD">
+					Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus non lacus risus. Vivamus et diam eu neque porta sollicitudin. Sed ornare lobortis risus eget cursus. Phasellus tempor eleifend tincidunt
+				</div>
+			</div>
+			<div>
+				<div class="logoD">
+					<i class="material-icons">visibility</i>
+					CSS3
+				</div>
+				<div class="textD">
+					Morbi luctus ligula elit, non ornare ipsum cursus sed. Suspendisse quis urna ac nunc porttitor facilisis id sed turpis. Aenean augue purus, imperdiet non arcu nec, viverra maximus leo. Vestibulum imperdiet pharetra lacinia. Vestibulum in tellus a velit maximus 
+				</div>
+			</div>
+			<div>
+				<div class="logoD">
+					<i class="material-icons">build</i>
+					JAVASCRIPT
+				</div>
+				<div class="textD">
+					Nunc ut tortor ac mi viverra consequat. Ut vulputate velit eu odio congue, a molestie orci eleifend. Pellentesque congue accumsan quam. Phasellus ac tincidunt lorem. Cras a rutrum nisi. Phasellus in interdum mauris, eu rutrum ex. Nunc eget dictum sapien.
+				</div>
+			</div>
+		</div>
+		<div class="opinion">
+			<div class="inside">
+				<div class="imageO">
+					<img src="https://avatars0.githubusercontent.com/u/5733463?s=460&v=4">
+				</div>
+				<div class="textO">
+					<i>"Damn bro, after one year of using these technologies we’ve had our highest revenue-generating year so far. We exceeded our yearly goal, hitting it one month sooner than expected!"</i>
+					<br>
+					<small>-Jhon Doe, Creative Headhunter</small>
+				</div>
+			</div>
+		</div>
+		<footer>
+			<div class="left">
+				OH, HELLO.
+				<br>
+				<br>
+				Want to talk? Drop me a line. I'm always interested in new projects, opportunities, or just chatting. 
+				<br>
+				<hr>
+				<a href="http://migu.es">migu.es</a></div>
+			<div class="right">© 2019 MIGUEL RODRIGUEZ</div>
+		</footer>
+	</section>	
+</body>
+</html>
