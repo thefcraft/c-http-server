@@ -6,4 +6,4 @@ To complile the server.h
 
 To run the server
 
-`gcc server-test.c -L. -lserver && ./a.exe`
+`gcc demo.c -L. -lserver && ./a.exe`
