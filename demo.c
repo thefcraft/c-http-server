@@ -11,7 +11,7 @@ void home(server *self, str *response, list *headers, str *content_buffer){
     // for (int i = pos; i < strlen(headers->head->data->value); i++) other_data[i-pos] = headers->head->data->value[i];
     // other_data[strlen(headers->head->data->value)-pos] = '\0';
     // printf("other_data: \"%s\"\n", other_data);
-    send_file(response, "templates\\index.html");
+    send_file(response, "templates/index.html");
 }
 void login(server *self, str *response, list *headers, str *content_buffer){
     response->append(response, "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n");
