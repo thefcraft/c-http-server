@@ -20,6 +20,16 @@
 #endif
 
 #define BUFFER_SIZE 4096
+#define RED   "\x1B[31m"
+#define GRN   "\x1B[32m"
+#define YEL   "\x1B[33m"
+#define BLU   "\x1B[34m"
+#define MAG   "\x1B[35m"
+#define CYN   "\x1B[36m"
+#define WHT   "\x1B[37m"
+#define RESET "\x1B[0m"
+
+// TODO remove all unnecessary from .h and add them to .c so while importing it don't import _func's
 
 typedef struct _server server;
 typedef struct _str str;
@@ -37,6 +47,7 @@ struct _server{
     struct _server_node *head;
     struct _server_node *tail;
     int length;
+    int debug;
     // void (*print)(struct _str*); // print method
     void (*route)(struct _server*, char*, char*, Callback callback);
     int (*run)(struct _server*, char*, int, int);
@@ -49,16 +60,18 @@ int find(char *s, char *value);
 int findchar(char *s, char value);
 size_t get_file_size(FILE *fptr);
 void send_file(str *response, char *filename);
+void send_file_with_header(str *response, char *filename, char *header);
 
 // Function to convert a request string to an integer representation
 int _server_request_to_int(const char *str);
 
 void _server_route(struct _server *self, char *method, char *path, Callback callback);
 int _server_run(struct _server *self, char *host, int port, int debug);
-
+void _server_debug(struct _server *self, const char *, ...);
 // String()
 struct _str_chunk{
     char *data;
+    int length;
     struct _str_chunk *next;
 };
 
@@ -68,6 +81,7 @@ struct _str{
     int length;
     void (*print)(struct _str*); // print method
     void (*append)(struct _str*, char*); // Append object to the end of the string.
+    void (*append_byte)(struct _str*, char*, int);
     void (*free)(struct _str*); // Free the string.
     void (*clear)(struct _str*); // Clear the string
     void (*raw)(struct _str*, char*); // copy the string to the buffer
@@ -77,6 +91,7 @@ struct _str{
 void _str_data__repr__(char* );
 void _str_print(struct _str *);
 void _str_append(struct _str *, char *);
+void _str_append_byte(struct _str *, char *, int);
 void _str_raw(struct _str *, char *);
 void _str_clear(struct _str *);
 void _str_get_chunk(struct _str *, int , char *, int );

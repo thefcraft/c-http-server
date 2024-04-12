@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
 #include "server.h"
@@ -12,6 +13,13 @@
     #include <unistd.h> // For close()
     #include <arpa/inet.h> // For inet_ntop()
 #endif
+
+// TODO add streaming support to server
+// you can use send_data(response) func then clear response to add streaming
+// DONE add /path/* support to server
+// TODO add request.method and * inplace of POST/GET in app(&app, method)
+// TODO add good pipeline
+// TODO fix bugs like file not closing after request is done...
 
 int find(char *s, char *value) {
     int i = 0;
@@ -47,25 +55,36 @@ int _server_request_to_int(const char *str) {
     return 0; // Default case
 }
 
-void route_post(str *response, list *headers, str *data){
-    int pos = findchar(headers->head->data->value, ' ');
-    char url[pos+1];
-    for (int i = 0; i < pos; i++) url[i] = headers->head->data->value[i];
-    url[pos] = '\0';
-    printf("URL: %s\n", url);
-    char data_raw[data->length];
-    data->raw(data, data_raw);
+// void route_post(str *response, list *headers, str *data){
+//     int pos = findchar(headers->head->data->value, ' ');
+//     char url[pos+1];
+//     for (int i = 0; i < pos; i++) url[i] = headers->head->data->value[i];
+//     url[pos] = '\0';
+//     printf("URL: %s\n", url);
+//     char data_raw[data->length];
+//     data->raw(data, data_raw);
 
-    if (strcmp(url, "/") == 0) {
-        response->append(response, "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n");
-        response->append(response, "Hello world! POST<br>");
-        response->append(response, data_raw);
-        response->append(response, "<br>");
-        response->append(response, headers->head->data->value);
-    }
-    else {
-        response->append(response, "HTTP/1.1 404 NOT FOUND\r\nContent-Type: text/html\r\n\r\n");
-        response->append(response, "Not Fount");
+//     if (strcmp(url, "/") == 0) {
+//         response->append(response, "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n");
+//         response->append(response, "Hello world! POST<br>");
+//         response->append(response, data_raw);
+//         response->append(response, "<br>");
+//         response->append(response, headers->head->data->value);
+//     }
+//     else {
+//         response->append(response, "HTTP/1.1 404 NOT FOUND\r\nContent-Type: text/html\r\n\r\n");
+//         response->append(response, "Not Fount");
+//     }
+// }
+
+void _server_debug(struct _server *self, const char *format, ...){
+    if (self->debug){
+        va_list args;
+        va_start(args, format);
+        printf(CYN "DEBUG: " MAG);
+        vprintf(format, args);
+        printf("\n"RESET);
+        va_end(args);
     }
 }
 
@@ -97,6 +116,7 @@ int _server_run(struct _server *self, char *host, int port, int debug){
     socklen_t client_len;
     char client_ip[INET_ADDRSTRLEN]; // Buffer to store client IP address
     char buffer[BUFFER_SIZE+1]; // Buffer to store received data
+    self->debug = debug;
 
     // Create socket
     if ((server_sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) { // INVALID_SOCKET == ~0
@@ -106,7 +126,9 @@ int _server_run(struct _server *self, char *host, int port, int debug){
     
     // Prepare the sockaddr_in structure
     server.sin_family = AF_INET;
-    server.sin_addr.s_addr = INADDR_ANY;
+    if(strcmp(host, "0.0.0.0")==0) server.sin_addr.s_addr = INADDR_ANY;
+    else if(strcmp(host, "localhost")==0) server.sin_addr.s_addr = inet_addr("127.0.0.1");
+    else server.sin_addr.s_addr = inet_addr(host);
     server.sin_port = htons(port);
     
     // Bind
@@ -114,8 +136,21 @@ int _server_run(struct _server *self, char *host, int port, int debug){
         perror("Bind failed");
         return 1;
     }
-    printf("Server listening on port %d...\n", port);
-
+    
+    printf(RED"*"CYN" Basic HTTP Server in C\n");
+    if(debug) printf(RED"*"CYN" Debug mode: "GRN"on\n");
+    else printf(RED"*"CYN" Debug mode: "GRN"off\n");
+    printf(RED "WARNING:"RESET CYN" This is a development server. Do not use it in a production deployment.\n");
+    if(strcmp(host, "0.0.0.0")==0){
+        printf(RED"*"CYN" Running on all addresses "GRN"(0.0.0.0)\n");
+        // printf(RED"*"CYN" Running on "YEL"http://127.0.0.1:%d\n", port);
+        // printf(RED"*"CYN" Running on "YEL"http://10.19.12.191:%d\n", port);
+    }
+    else{
+        printf(RED"*"CYN" Running on "YEL"http://127.0.0.1:%d\n", port);
+    }
+    _server_debug(self, "Server is set to debug mode");
+    
     // Listen
     listen(server_sock, 5);
 
@@ -130,7 +165,7 @@ int _server_run(struct _server *self, char *host, int port, int debug){
 
         // Print client address
         inet_ntop(AF_INET, &client.sin_addr, client_ip, INET_ADDRSTRLEN);
-        // printf("Client connected from: %s:%d\n", client_ip, ntohs(client.sin_port));
+        _server_debug(self, "Client connected from: %s:%d", client_ip, ntohs(client.sin_port));
         
         str header_buffer = String();
         str content_buffer = String();
@@ -183,6 +218,7 @@ int _server_run(struct _server *self, char *host, int port, int debug){
             }
         }
         
+        
         char raw_header[header_buffer.length];
         header_buffer.raw(&header_buffer, raw_header);
 
@@ -230,7 +266,7 @@ int _server_run(struct _server *self, char *host, int port, int debug){
         // header_buffer.print(&content_buffer);
         
         str response = String();
-        printf("%s - - %s \"%s\"\n", client_ip, headers.head->data->key, headers.head->data->value);
+        printf(BLU "%s" RESET " - - " GRN "%s" RESET " \"%s\"\n", client_ip, headers.head->data->key, headers.head->data->value);
         int flag_not_found = 1;
         struct _server_node *node = self->head;
         
@@ -239,10 +275,29 @@ int _server_run(struct _server *self, char *host, int port, int debug){
         char url[pos+1];
         for (int i = 0; i < pos; i++) url[i] = headers.head->data->value[i];
         url[pos] = '\0';
-
+        
         while (node!=NULL){
             if (strcmp(headers.head->data->key, node->method) == 0){
+                // checking for /*
+                int pos_path_not_star = find(node->path, "/*"); 
+                char path_not_star[strlen(node->path)+1];
+                strcpy(path_not_star, node->path);
+                path_not_star[pos_path_not_star] = '\0';
+
                 if (strcmp(url, node->path) == 0){
+                    if(strcmp(headers.head->data->key, "POST")==0){
+                        int content_length = atoi(headers.get(&headers, "Content-Length:"));
+                        while (content_length > content_buffer.length){
+                            int bytes_received = recv(client_sock, buffer, min(sizeof(buffer)-1, (content_length - content_buffer.length)), 0);
+                            if (bytes_received <= 0) break;
+                            buffer[bytes_received] = '\0';
+                            content_buffer.append(&content_buffer, buffer);
+                        }
+                    }
+                    node->callback(self, &response, &headers, &content_buffer);
+                    flag_not_found = 0;
+                    break;
+                }else if((pos_path_not_star!=-1)&&(strcmp(url, path_not_star)!=0)&&(find(url, path_not_star)!=-1)){
                     if(strcmp(headers.head->data->key, "POST")==0){
                         int content_length = atoi(headers.get(&headers, "Content-Length:"));
                         while (content_length > content_buffer.length){
@@ -259,14 +314,21 @@ int _server_run(struct _server *self, char *host, int port, int debug){
             }
             node = node->next;
         }
-        if(flag_not_found == 1) printf("\n\nERROR: NOT FOUND\n\n");
+        if(flag_not_found == 1) printf(RED "ERROR:" RESET " NOT FOUND\n");
     
         // char response[] = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\nHello world!";
-        char response_raw[response.length];
+        // TODO this is make error as size is larger
+        // char response_raw[response.length];
+        char *response_raw = (char *)malloc(response.length);
         response.raw(&response, response_raw);
-        // Send response
-        send(client_sock, response_raw, strlen(response_raw), 0);
         
+        // Send response
+        send(client_sock, response_raw, response.length, 0);
+                
+        free(response_raw);
+        
+        // _server_debug(self, RESET"%s "MAG"Socket connection closed", client_ip);
+        _server_debug(self, "Socket connection closed");
         // Close client socket
         closesocket(client_sock);
         headers.free(&headers);
@@ -302,9 +364,11 @@ void send_file(str *response, char *filename){
     FILE *fptr;
     fptr = fopen(filename, "rb");
     if (fptr == NULL) {
-        printf("Not able to open the file.\n");
+        response->append(response, "HTTP/1.1 404 NOT FOUND\r\n\r\n");
+        response->append(response, "ERROR : 404 NOT FOUND");
+        printf("ERROR : 404 NOT FOUND\n");
         fclose(fptr);
-        exit(EXIT_FAILURE);
+        return;
     }
     size_t file_size = get_file_size(fptr);
     // Allocate memory to store file data
@@ -324,10 +388,49 @@ void send_file(str *response, char *filename){
         exit(EXIT_FAILURE);
     }
     file_data[file_size] = '\0'; // Null-terminate the string // file_size + 1
-    response->append(response, "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n");
-    response->append(response, file_data);
+    // response->append(response, "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n");
+    response->append(response, "HTTP/1.1 200 OK\r\n\r\n");
+    response->append_byte(response, file_data, file_size);
+    fclose(fptr);
+    free(file_data);
 }
 
+// TODO: add similar to jinja2 support
+// void render_template(str *response, char *filename, ...)
+
+void send_file_with_header(str *response, char *filename, char *header){
+    FILE *fptr;
+    fptr = fopen(filename, "rb");
+    if (fptr == NULL) {
+        response->append(response, "HTTP/1.1 404 NOT FOUND\r\n\r\n");
+        response->append(response, "ERROR : 404 NOT FOUND");
+        fclose(fptr);
+        return;
+    }
+    size_t file_size = get_file_size(fptr);
+    // Allocate memory to store file data
+    char *file_data = (char *)malloc(file_size+1);
+    if (file_data == NULL) {
+        printf("Memory allocation failed.\n");
+        fclose(fptr);
+        free(file_data);
+        exit(EXIT_FAILURE);
+    }
+    // Read the entire file into memory
+    size_t bytes_read = fread(file_data, 1, file_size, fptr);
+    if (bytes_read != file_size) {
+        printf("Error reading file.\nSize: %d\tRead: %d\n", file_size, bytes_read);
+        fclose(fptr);
+        free(file_data);
+        exit(EXIT_FAILURE);
+    }
+    file_data[file_size] = '\0'; // Null-terminate the string // file_size + 1
+    // response->append(response, "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n");
+    response->append(response, header);
+    response->append_byte(response, file_data, file_size);
+    fclose(fptr);
+    free(file_data);
+}
 
 // String()
 void _str_data__repr__(char* data){
@@ -357,6 +460,7 @@ void _str_append(struct _str *self, char *data){
     }
     strcpy(copied_data, data);
     node->data = copied_data;
+    node->length = -1;
     node->next = NULL;
     if (self->head == NULL){
         self->head = node;
@@ -368,6 +472,27 @@ void _str_append(struct _str *self, char *data){
     // printf("Size of `%s` is %d\n", data, strlen(data));
     self->length+=strlen(data);
 }
+void _str_append_byte(struct _str *self, char *data, int len){
+    // Append object to the end of the list.
+	struct _str_chunk *node = (struct _str_chunk*)malloc(sizeof(struct _str_chunk));
+    char* copied_data = (char*)malloc(sizeof(char)*(len));
+    if (copied_data == NULL) {
+        fprintf(stderr, "Memory allocation failed\n");
+        return;
+    }
+    for (int i = 0; i < len; i++) copied_data[i] = data[i];
+    node->data = copied_data;
+    node->length = len;
+    node->next = NULL;
+    if (self->head == NULL){
+        self->head = node;
+        self->tail = node;
+    }else{
+        self->tail->next = node;
+        self->tail = node;
+    }
+    self->length+=len;
+}
 void _str_append_char(struct _str *self, char ch){
 
 }
@@ -377,22 +502,36 @@ void _str_raw(struct _str *self, char *output){
     int idx = 0;
     if (node!=NULL) {
         while (node->next!=NULL){
+            if (node->length == -1){
+                int i=0;
+                while (node->data[i]!='\0'){
+                    output[idx] = node->data[i];
+                    i++;
+                    idx++;
+                }
+            }else{
+                for (int i = 0; i < node->length; i++){
+                    output[idx] = node->data[i];
+                    idx++;
+                }
+            }
+            // strcat(output, node->data);
+            node = node->next;
+        }
+        if (node->length == -1){
             int i=0;
             while (node->data[i]!='\0'){
                 output[idx] = node->data[i];
                 i++;
                 idx++;
             }
-            // strcat(output, node->data);
-            node = node->next;
+            output[idx] = '\0';
+        }else{
+            for (int i = 0; i < node->length; i++){
+                output[idx] = node->data[i];
+                idx++;
+            }
         }
-        int i=0;
-        while (node->data[i]!='\0'){
-            output[idx] = node->data[i];
-            i++;
-            idx++;
-        }
-        output[idx] = '\0';
         // strcat(output, node->data);
     }
     // strcat(output, '\0');
@@ -440,6 +579,7 @@ struct _str String() {
     s.length = 0;
     s.print = _str_print;
     s.append = _str_append;
+    s.append_byte = _str_append_byte; // TODO: this helps to add music and images support as \0 reset a string
     s.free = _str_clear;
     s.clear = _str_clear;
     s.raw = _str_raw;
