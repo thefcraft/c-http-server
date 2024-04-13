@@ -5,18 +5,9 @@
 #define HOST "0.0.0.0"
 #define PORT 8080
 #define DEBUG 1
-
 // gcc demo.c -L. -lserver && ./a.exe 
-
 void home(server *self, str *response, list *headers, str *content_buffer){
-    // int pos = findchar(headers->head->data->value, ' ')+1;
-    // char other_data[strlen(headers->head->data->value)-pos+1];
-    // for (int i = pos; i < strlen(headers->head->data->value); i++) other_data[i-pos] = headers->head->data->value[i];
-    // other_data[strlen(headers->head->data->value)-pos] = '\0';
-    // printf("other_data: \"%s\"\n", other_data);
     send_file(response, "templates/index.html");
-    // response->append(response, "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n");
-    // response->append(response, "Hello World");
 }
 void api(server *self, str *response, list *headers, str *content_buffer){
     char body[content_buffer->length];
@@ -35,8 +26,6 @@ void send_static(server *self, str *response, list *headers, str *content_buffer
     send_file(response, url);   
 }
 void send_logo(server *self, str *response, list *headers, str *content_buffer){
-    // send_file(response, "static/favicon.ico"); return; // NOW WORKS
-    // char header[] = "HTTP/1.1 200 OK\r\nContent-Type: image/x-icon\r\n\r\n";
     str header_buffer = String();
     header_buffer.append(&header_buffer, "HTTP/1.1 200 OK\r\n");
     header_buffer.append(&header_buffer, "Accept-Ranges: bytes\r\n");

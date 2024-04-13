@@ -143,7 +143,7 @@ int _server_run(struct _server *self, char *host, int port, int debug){
     printf(RED "WARNING:"RESET CYN" This is a development server. Do not use it in a production deployment.\n");
     if(strcmp(host, "0.0.0.0")==0){
         printf(RED"*"CYN" Running on all addresses "GRN"(0.0.0.0)\n");
-        // printf(RED"*"CYN" Running on "YEL"http://127.0.0.1:%d\n", port);
+        printf(RED"*"CYN" Running on "YEL"http://127.0.0.1:%d\n", port);
         // printf(RED"*"CYN" Running on "YEL"http://10.19.12.191:%d\n", port);
     }
     else{
