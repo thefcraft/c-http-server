@@ -1,0 +1,7 @@
+https://www.youtube.com/watch?v=3T3ZDquDDVg
+
+sudo su
+echo "./new_core" > /proc/sys/kernel/core_pattern
+cat /proc/sys/kernel/core_pattern
+
+gdb ./a ./new_core

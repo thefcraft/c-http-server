@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="/static/css/Resistorcolorcode.css">
+</head>
+
+<body>
+    <div class="container">
+        <div id="wrapper-input">
+
+            <div class="Resistor">
+                <div class="wire"></div>
+                <div id="resistor">
+                    <div class="center">
+                        <div id="second"></div>
+                        <div id="multiplier"></div>
+                    </div>
+                    <div class="left">
+                        <div id="first"></div>
+                        <div class="shadow"></div>
+                    </div>
+                    <div class="right">
+                        <div id="tolerancy"></div>
+                        <div class="shadow"></div>
+                    </div>
+                </div>
+            </div>
+            <form action="javascript:void(0);">
+                <div>
+                    <div>
+                        <label for="resistorValue">Resistor (Ω)</label>
+                    </div>
+                    <div class="number-input-container">
+                        <button type="button" class="button-decrement" onclick="setNumber(event)"
+                            data-input-id="resistorValue" data-operation="decrement"></button>
+                        <div class="number-input">
+                            <input type="number" id="resistorValue" name="resistorValue" class="number-input-text-box"
+                                value="180" min="0" oninput="handleNumberInput(this)"
+                                onblur="handleNumberInputBlur(event)" data-step="10" />
+                        </div>
+                        <button type="button" class="button-increment" onclick="setNumber(event)"
+                            data-input-id="resistorValue" data-operation="increment"></button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script>
+
+const colors = [
+  "linear-gradient(#000, #555, #000)",
+  "linear-gradient(#841, #A62, #841)",
+  "linear-gradient(#A11, #FAA, #A11)",
+  "linear-gradient(#A81, #FB8, #A81)",
+  "linear-gradient(#AA1, #FFA, #AA1)",
+  "linear-gradient(#5A5, #AFA, #5A5)",
+  "linear-gradient(#22F, #AAF, #22F)",
+  "linear-gradient(#A5A, #F8F, #A5A)",
+  "linear-gradient(#555, #EEE, #555)",
+  "linear-gradient(#AAA, #FFF, #AAA)",
+];
+
+        function getFromApi(value) {
+            console.log(value);
+            // Data to be sent in the POST request body
+            const postData = {
+                value: value
+            };
+
+            // Options for the fetch() function
+            const options = {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json' // Specify the content type as JSON
+                },
+                body: JSON.stringify(postData) // Convert the data to JSON format
+            };
+
+            fetch('/Resistorcolorcode', options)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json(); // Parse the response body as JSON
+                })
+                .then(data => {
+                    // Do something with the JSON data
+                    console.log(data);
+                    document.documentElement.style.setProperty('--first', colors[data['colors'][0]]);
+                    document.documentElement.style.setProperty('--second', colors[data['colors'][1]]);
+                    document.documentElement.style.setProperty('--multiplier', colors[data['colors'][2]]);
+                    })
+                .catch(error => {
+                    console.error('There was a problem with the fetch operation:', error);
+                });
+        }
+
+
+
+
+        function setNumber(event) {
+            let button = event.target;
+            let input = document.getElementById(button.dataset.inputId);
+
+            if (input) {
+                let value = parseFloat(input.value);
+                let step = parseFloat(input.dataset.step);
+
+                if (button.dataset.operation === "decrement") {
+                    value -= isNaN(step) ? 1 : step;
+                } else if (button.dataset.operation === "increment") {
+                    value += isNaN(step) ? 1 : step;
+                }
+
+                if (input.hasAttribute("min") && value < parseFloat(input.min)) {
+                    value = input.min;
+                }
+
+                if (input.value !== value) {
+                    setInputValue(input, value);
+                    setInputButtonState();
+                }
+            }
+        }
+        function handleNumberInput(elem) {
+            if (elem.value == '') elem.value = 0;
+            else {
+                if (parseInt(elem.value)) elem.value = parseInt(elem.value);
+                else elem.value = 0;
+            }
+
+            getFromApi(parseInt(elem.value));
+        }
+
+        function handleNumberInputBlur(event) {
+            const value = event.target.value;
+
+            if (event.target.hasAttribute("min") && value < parseFloat(event.target.min))
+                event.target.value = event.target.min;
+        }
+
+        function setInputButtonState() {
+            const inputs = document.getElementsByClassName("number-input-text-box");
+
+            for (let input of inputs) {
+                if (input.id.length > 0) { // during value transition the old input won't have an id
+                    const value = input.value;
+                    const parent = input.parentElement.parentElement;
+
+                    if (parent.children[0] && input.hasAttribute("min"))
+                        parent.children[0].disabled = value <= parseFloat(input.min);
+
+                }
+            }
+        }
+
+
+
+        function setInputValue(input, value) {
+            let newInput = input.cloneNode(true);
+            const parentBox = input.parentElement.getBoundingClientRect();
+
+            input.id = "";
+
+            newInput.value = value;
+            getFromApi(value);
+
+            if (value > input.value) {
+                // right to left
+                input.parentElement.appendChild(newInput);
+                input.style.marginLeft = -parentBox.width + "px";
+            } else if (value < input.value) {
+                // left to right
+                newInput.style.marginLeft = -parentBox.width + "px";
+                input.parentElement.prepend(newInput);
+                window.setTimeout(function () {
+                    newInput.style.marginLeft = 0
+                }, 20);
+            }
+
+            window.setTimeout(function () {
+                input.parentElement.removeChild(input);
+            }, 250);
+        }
+
+    </script>
+
+</body>
+
+</html>

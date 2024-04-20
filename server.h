@@ -80,6 +80,7 @@ struct _str{
     struct _str_chunk *tail;
     int length;
     void (*print)(struct _str*); // print method
+    void (*append_format)(struct _str*, const char*, ...);
     void (*append)(struct _str*, char*); // Append object to the end of the string.
     void (*append_byte)(struct _str*, char*, int);
     void (*free)(struct _str*); // Free the string.
@@ -90,6 +91,7 @@ struct _str{
 
 void _str_data__repr__(char* );
 void _str_print(struct _str *);
+void _str_append_format(struct _str *, const char *, ...);
 void _str_append(struct _str *, char *);
 void _str_append_byte(struct _str *, char *, int);
 void _str_raw(struct _str *, char *);

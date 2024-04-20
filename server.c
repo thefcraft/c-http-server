@@ -266,7 +266,7 @@ int _server_run(struct _server *self, char *host, int port, int debug){
         // header_buffer.print(&content_buffer);
         
         str response = String();
-        printf(BLU "%s" RESET " - - " GRN "%s" RESET " \"%s\"\n", client_ip, headers.head->data->key, headers.head->data->value);
+        // printf(BLU "%s" RESET " - - " GRN "%s" RESET " \"%s\"\n", client_ip, headers.head->data->key, headers.head->data->value);
         int flag_not_found = 1;
         struct _server_node *node = self->head;
         
@@ -314,16 +314,28 @@ int _server_run(struct _server *self, char *host, int port, int debug){
             }
             node = node->next;
         }
-        if(flag_not_found == 1) printf(RED "ERROR:" RESET " NOT FOUND\n");
-    
+        if(flag_not_found == 1){
+            response.append(&response, "HTTP/1.1 404 NOT FOUND\r\n\r\n");
+            response.append(&response, "ERROR : 404 NOT FOUND"); 
+        }
         // char response[] = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\nHello world!";
         // TODO this is make error as size is larger
         // char response_raw[response.length];
-        char *response_raw = (char *)malloc(response.length);
+        char *response_raw = (char *)malloc(response.length+1);
         response.raw(&response, response_raw);
         
         // Send response
         send(client_sock, response_raw, response.length, 0);
+
+        pos = findchar(response_raw+9, ' ');
+        response_raw[pos+9] = '\0';
+        if(flag_not_found == 1) printf(BLU "%s" RESET " - "RED"%s"RESET" - " GRN "%s" RESET " \"%s\"\n", client_ip, response_raw+9, headers.head->data->key, headers.head->data->value);
+        else printf(BLU "%s" RESET " - "GRN"%s"RESET" - " GRN "%s" RESET " \"%s\"\n", client_ip, response_raw+9, headers.head->data->key, headers.head->data->value);
+        // if(flag_not_found == 1) printf(RED "ERROR:" RESET " NOT FOUND\n");
+        response_raw[pos+9] = ' ';
+
+
+        
                 
         free(response_raw);
         
@@ -449,6 +461,34 @@ void _str_print(struct _str *self){
         _str_data__repr__(node->data);
     }
     printf("\n");
+}
+// TODO: 
+void _str_append_format(struct _str *self, const char *format, ...){
+    va_list args;
+    va_start(args, format);
+    // Determine the length of the formatted string
+    int len = vsnprintf(NULL, 0, format, args);
+    // Reset args to use it again
+    va_end(args);
+    va_start(args, format);
+    // Allocate memory for the formatted string (+1 for null terminator)
+    char* copied_data = (char*)malloc(sizeof(char)*(len + 1)); 
+    // Format the string into the buffer
+    vsprintf(copied_data, format, args);
+    va_end(args);
+    struct _str_chunk *node = (struct _str_chunk*)malloc(sizeof(struct _str_chunk));
+    node->data = copied_data;
+    node->length = -1;
+    node->next = NULL;
+    if (self->head == NULL){
+        self->head = node;
+        self->tail = node;
+    }else{
+        self->tail->next = node;
+        self->tail = node;
+    }
+    // printf("Size of `%s` is %d\n", data, strlen(data));
+    self->length+=strlen(copied_data);
 }
 void _str_append(struct _str *self, char *data){
     // Append object to the end of the list.
@@ -578,6 +618,7 @@ struct _str String() {
     s.tail = NULL;
     s.length = 0;
     s.print = _str_print;
+    s.append_format = _str_append_format;
     s.append = _str_append;
     s.append_byte = _str_append_byte; // TODO: this helps to add music and images support as \0 reset a string
     s.free = _str_clear;
@@ -688,3 +729,13 @@ struct _list List() {
     l.get = _list_get_header;
     return l;
 }
+
+
+
+// TODO: Implement json parsing and more
+// struct _jsonify{
+//     int length;
+//     struct _jsonify next;
+
+
+// };

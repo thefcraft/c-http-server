@@ -7,7 +7,7 @@
 #define DEBUG 1
 // gcc demo.c -L. -lserver && ./a.exe 
 void home(server *self, str *response, list *headers, str *content_buffer){
-    send_file(response, "templates/index.html");
+    send_file(response, "templates/demo.html");
 }
 void api(server *self, str *response, list *headers, str *content_buffer){
     char body[content_buffer->length];
