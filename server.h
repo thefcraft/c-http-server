@@ -48,9 +48,11 @@ struct _server{
     struct _server_node *tail;
     int length;
     int debug;
+    int _stop;
     // void (*print)(struct _str*); // print method
     void (*route)(struct _server*, char*, char*, Callback callback);
     int (*run)(struct _server*, char*, int, int);
+    void (*stop)(struct _server *);
     // char* (*get)(struct _list*, char*);
 };
 
@@ -67,6 +69,7 @@ int _server_request_to_int(const char *str);
 
 void _server_route(struct _server *self, char *method, char *path, Callback callback);
 int _server_run(struct _server *self, char *host, int port, int debug);
+void _server_stop(struct _server *self);
 void _server_debug(struct _server *self, const char *, ...);
 // String()
 struct _str_chunk{

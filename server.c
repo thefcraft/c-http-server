@@ -347,6 +347,10 @@ int _server_run(struct _server *self, char *host, int port, int debug){
         // line_buffer.free(&line_buffer);
         header_buffer.free(&header_buffer);
         content_buffer.free(&content_buffer);
+        if (self->_stop==1) {
+            printf(RED "EXIT..." RESET);
+            return 0;
+        }
     }
     
     // Close server socket
@@ -356,12 +360,19 @@ int _server_run(struct _server *self, char *host, int port, int debug){
 
 }
 
+void _server_stop(struct _server *self){
+    self->_stop = 1;
+}
+
 struct _server http_server(){
     struct _server s;
     s.head = NULL;
     s.tail = NULL;
     s.length = 0;
+    s.debug = 0;
+    s._stop = 0;
     s.route = _server_route;
+    s.stop = _server_stop;
     s.run = _server_run;
     return s;
 }

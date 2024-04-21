@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include "server.h"
 
-#define HOST "0.0.0.0"
+#define HOST "localhost"
 #define PORT 5000
 #define DEBUG 0
 // In linux
@@ -85,9 +85,15 @@ void send_logo(server *self, str *response, list *headers, str *content_buffer){
     send_file_with_header(response, "static/favicon.ico", raw_header);   
     fclose(fptr);
 }
+void stop_server(server *self, str *response, list *headers, str *content_buffer){
+    self->stop(self);
+    response->append(response, "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n");
+    response->append(response, "{\"stop\": true}");
+}
 int main(){
     server app = http_server();
     app.route(&app, "GET", "/", home);
+    app.route(&app, "GET", "/stop", stop_server);
     app.route(&app, "GET", "/Resistorcolorcode", Resistorcolorcode);
     app.route(&app, "POST", "/Resistorcolorcode", ResistorcolorcodePOST);
     app.route(&app, "GET", "/favicon.ico", send_logo);
